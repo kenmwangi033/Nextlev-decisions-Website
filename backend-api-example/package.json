@@ -1,0 +1,16 @@
+{
+  "name": "nextlev-decisions-api",
+  "version": "1.0.0",
+  "description": "Backend API for NextLev Decisions landing page",
+  "main": "api/leads.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
