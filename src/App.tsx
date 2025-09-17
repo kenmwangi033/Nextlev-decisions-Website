@@ -25,7 +25,9 @@ import {
   Linkedin,
   Twitter,
   Globe,
-  ExternalLink
+  ExternalLink,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 function App() {
@@ -33,6 +35,7 @@ function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [pricingPeriod, setPricingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [currency, setCurrency] = useState<'USD' | 'KES'>('USD');
+  const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark mode
   
   // Lead capture states
   const [showExitIntent, setShowExitIntent] = useState(false);
@@ -64,6 +67,11 @@ function App() {
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    trackConversion('theme_toggle', { theme: !isDarkMode ? 'light' : 'dark' });
   };
 
   // Lead capture functions
@@ -130,6 +138,24 @@ function App() {
   const prevFormStep = () => {
     if (leadFormStep > 1) setLeadFormStep(leadFormStep - 1);
   };
+
+  // Theme persistence and initialization
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === 'dark');
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
+    }
+  }, []);
+
+  // Apply theme to document
+  useEffect(() => {
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', isDarkMode);
+  }, [isDarkMode]);
 
   // Time tracking for better exit intent
   useEffect(() => {
@@ -420,9 +446,17 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-gray-900 text-white' 
+        : 'bg-gray-50 text-gray-900'
+    }`}>
       {/* Header */}
-      <header className="fixed top-0 w-full bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 z-50">
+      <header className={`fixed top-0 w-full backdrop-blur-sm border-b z-50 transition-colors duration-300 ${
+        isDarkMode 
+          ? 'bg-gray-900/95 border-gray-800' 
+          : 'bg-white/95 border-gray-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
@@ -436,14 +470,37 @@ function App() {
             </div>
 
             <nav className="hidden lg:flex items-center space-x-8">
-              <a href="#features" onClick={(e) => handleSmoothScroll(e, '#features')} className="text-gray-300 hover:text-white transition-colors cursor-pointer">Features</a>
-              <a href="#benefits" onClick={(e) => handleSmoothScroll(e, '#benefits')} className="text-gray-300 hover:text-white transition-colors cursor-pointer">Benefits</a>
-              <a href="#pricing" onClick={(e) => handleSmoothScroll(e, '#pricing')} className="text-gray-300 hover:text-white transition-colors cursor-pointer">Pricing</a>
-              <a href="#testimonials" onClick={(e) => handleSmoothScroll(e, '#testimonials')} className="text-gray-300 hover:text-white transition-colors cursor-pointer">Reviews</a>
-              <a href="#resources" onClick={(e) => handleSmoothScroll(e, '#resources')} className="text-gray-300 hover:text-white transition-colors cursor-pointer">Resources</a>
+              <a href="#features" onClick={(e) => handleSmoothScroll(e, '#features')} className={`transition-colors cursor-pointer ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Features</a>
+              <a href="#benefits" onClick={(e) => handleSmoothScroll(e, '#benefits')} className={`transition-colors cursor-pointer ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Benefits</a>
+              <a href="#pricing" onClick={(e) => handleSmoothScroll(e, '#pricing')} className={`transition-colors cursor-pointer ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Pricing</a>
+              <a href="#testimonials" onClick={(e) => handleSmoothScroll(e, '#testimonials')} className={`transition-colors cursor-pointer ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Reviews</a>
+              <a href="#resources" onClick={(e) => handleSmoothScroll(e, '#resources')} className={`transition-colors cursor-pointer ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Resources</a>
             </nav>
 
-            <div className="hidden lg:block">
+            <div className="hidden lg:flex items-center space-x-4">
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                }`}
+                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              
               <button 
                 onClick={(e) => {
                   e.preventDefault();
@@ -470,13 +527,41 @@ function App() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden bg-gray-800 border-t border-gray-700">
+          <div className={`lg:hidden border-t transition-colors duration-300 ${
+            isDarkMode 
+              ? 'bg-gray-800 border-gray-700' 
+              : 'bg-white border-gray-200'
+          }`}>
             <div className="px-4 py-2 space-y-2">
-              <a href="#features" onClick={(e) => handleSmoothScroll(e, '#features')} className="block py-2 text-gray-300 hover:text-white cursor-pointer">Features</a>
-              <a href="#benefits" onClick={(e) => handleSmoothScroll(e, '#benefits')} className="block py-2 text-gray-300 hover:text-white cursor-pointer">Benefits</a>
-              <a href="#pricing" onClick={(e) => handleSmoothScroll(e, '#pricing')} className="block py-2 text-gray-300 hover:text-white cursor-pointer">Pricing</a>
-              <a href="#testimonials" onClick={(e) => handleSmoothScroll(e, '#testimonials')} className="block py-2 text-gray-300 hover:text-white cursor-pointer">Reviews</a>
-              <a href="#resources" onClick={(e) => handleSmoothScroll(e, '#resources')} className="block py-2 text-gray-300 hover:text-white cursor-pointer">Resources</a>
+              <a href="#features" onClick={(e) => handleSmoothScroll(e, '#features')} className={`block py-2 cursor-pointer transition-colors ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Features</a>
+              <a href="#benefits" onClick={(e) => handleSmoothScroll(e, '#benefits')} className={`block py-2 cursor-pointer transition-colors ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Benefits</a>
+              <a href="#pricing" onClick={(e) => handleSmoothScroll(e, '#pricing')} className={`block py-2 cursor-pointer transition-colors ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Pricing</a>
+              <a href="#testimonials" onClick={(e) => handleSmoothScroll(e, '#testimonials')} className={`block py-2 cursor-pointer transition-colors ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Reviews</a>
+              <a href="#resources" onClick={(e) => handleSmoothScroll(e, '#resources')} className={`block py-2 cursor-pointer transition-colors ${
+                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}>Resources</a>
+              
+              {/* Mobile Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className={`w-full flex items-center justify-center py-2 px-4 rounded-lg transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+              >
+                {isDarkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+              </button>
+              
               <button 
                 onClick={(e) => {
                   e.preventDefault();
@@ -499,16 +584,30 @@ function App() {
       {/* Enhanced Hero Section */}
       <section className="relative pt-24 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-gray-900"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div className={`absolute inset-0 transition-colors duration-300 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-gray-900' 
+            : 'bg-gradient-to-br from-blue-50 via-purple-50 to-gray-100'
+        }`}></div>
+        <div className={`absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl transition-colors duration-300 ${
+          isDarkMode ? 'bg-blue-500/10' : 'bg-blue-500/20'
+        }`}></div>
+        <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl transition-colors duration-300 ${
+          isDarkMode ? 'bg-purple-500/10' : 'bg-purple-500/20'
+        }`}></div>
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
             <div className="text-center lg:text-left">
-              <div className="inline-block bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-blue-500/30 rounded-full px-6 py-3 mb-8 backdrop-blur-sm">
-                <span className="text-blue-300 text-sm font-medium flex items-center">
+              <div className={`inline-block border rounded-full px-6 py-3 mb-8 backdrop-blur-sm transition-colors duration-300 ${
+                isDarkMode 
+                  ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-blue-500/30' 
+                  : 'bg-gradient-to-r from-blue-100/60 to-purple-100/60 border-blue-300/50'
+              }`}>
+                <span className={`text-sm font-medium flex items-center transition-colors duration-300 ${
+                  isDarkMode ? 'text-blue-300' : 'text-blue-600'
+                }`}>
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
                   #1 AI-Powered Decision Intelligence Platform
                 </span>
@@ -516,7 +615,11 @@ function App() {
               
               <h1 className="font-bold mb-6 leading-relaxed space-y-2">
                 <div className="text-2xl md:text-3xl lg:text-4xl">
-                  <span className="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">
+                  <span className={`bg-clip-text text-transparent transition-colors duration-300 ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-r from-white via-gray-100 to-gray-300' 
+                      : 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700'
+                  }`}>
                     Transform Your Business with
                   </span>
                 </div>
@@ -526,13 +629,19 @@ function App() {
                   </span>
                 </div>
                 <div className="text-2xl md:text-3xl lg:text-4xl">
-                  <span className="bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                  <span className={`bg-clip-text text-transparent transition-colors duration-300 ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-r from-white to-gray-200' 
+                      : 'bg-gradient-to-r from-gray-900 to-gray-800'
+                  }`}>
                     AI Decision Intelligence
                   </span>
                 </div>
             </h1>
               
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              <p className={`text-xl mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0 transition-colors duration-300 ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
                 Enterprise-grade platform delivering <span className="text-blue-400 font-semibold">real-time AI insights</span> across 50+ criteria, 11 specialized reports, and comprehensive ESG tracking with 17 UN SDGs.
               </p>
               
@@ -572,17 +681,29 @@ function App() {
             </div>
               
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm mb-8">
-                <span className="flex items-center bg-gray-800/50 px-3 py-2 rounded-full backdrop-blur-sm">
+                <span className={`flex items-center px-3 py-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
+                  isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'
+                }`}>
                   <Check className="w-4 h-4 mr-2 text-green-400" /> 
-                  <span className="text-gray-300">No credit card required</span>
+                  <span className={`transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>No credit card required</span>
                 </span>
-                <span className="flex items-center bg-gray-800/50 px-3 py-2 rounded-full backdrop-blur-sm">
+                <span className={`flex items-center px-3 py-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
+                  isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'
+                }`}>
                   <Check className="w-4 h-4 mr-2 text-green-400" /> 
-                  <span className="text-gray-300">14-day free trial</span>
+                  <span className={`transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>14-day free trial</span>
                 </span>
-                <span className="flex items-center bg-gray-800/50 px-3 py-2 rounded-full backdrop-blur-sm">
+                <span className={`flex items-center px-3 py-2 rounded-full backdrop-blur-sm transition-colors duration-300 ${
+                  isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'
+                }`}>
                   <Shield className="w-4 h-4 mr-2 text-blue-400" /> 
-                  <span className="text-gray-300">Enterprise security</span>
+                  <span className={`transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>Enterprise security</span>
                 </span>
               </div>
 
@@ -590,15 +711,21 @@ function App() {
               <div className="grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
                 <div className="text-center lg:text-left">
                   <div className="text-2xl font-bold text-blue-400">500+</div>
-                  <div className="text-xs text-gray-400">Enterprises</div>
+                  <div className={`text-xs transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>Enterprises</div>
                 </div>
                 <div className="text-center lg:text-left">
                   <div className="text-2xl font-bold text-green-400">$2.4M</div>
-                  <div className="text-xs text-gray-400">Avg Savings</div>
+                  <div className={`text-xs transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>Avg Savings</div>
                 </div>
                 <div className="text-center lg:text-left">
                   <div className="text-2xl font-bold text-purple-400">99.9%</div>
-                  <div className="text-xs text-gray-400">Uptime SLA</div>
+                  <div className={`text-xs transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>Uptime SLA</div>
                 </div>
             </div>
           </div>
@@ -807,8 +934,12 @@ function App() {
           {/* Enhanced Metrics Cards */}
           <div className="mt-16">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-200 mb-2">Platform Capabilities</h2>
-              <p className="text-gray-400">Comprehensive AI-powered decision intelligence at your fingertips</p>
+              <h2 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-gray-200' : 'text-gray-800'
+              }`}>Platform Capabilities</h2>
+              <p className={`transition-colors duration-300 ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>Comprehensive AI-powered decision intelligence at your fingertips</p>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -856,7 +987,11 @@ function App() {
                   description: "Real-time monitoring"
                 }
             ].map((metric, index) => (
-                <div key={index} className="group bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-2xl p-6 border border-gray-700/50 hover:border-gray-600/50 transition-all hover:transform hover:scale-105 backdrop-blur-sm relative overflow-hidden">
+                <div key={index} className={`group rounded-2xl p-6 border transition-all hover:transform hover:scale-105 backdrop-blur-sm relative overflow-hidden ${
+                  isDarkMode 
+                    ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700/50 hover:border-gray-600/50' 
+                    : 'bg-gradient-to-br from-white/90 to-gray-50/90 border-gray-200/50 hover:border-gray-300/50'
+                }`}>
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
                   <div className="relative z-10">
@@ -867,12 +1002,20 @@ function App() {
                       <div className={`w-2 h-2 bg-gradient-to-r ${metric.color} rounded-full animate-pulse`}></div>
                     </div>
                     
-                    <div className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                    <div className={`text-3xl font-bold mb-2 bg-clip-text text-transparent transition-colors duration-300 ${
+                      isDarkMode 
+                        ? 'bg-gradient-to-r from-white to-gray-300' 
+                        : 'bg-gradient-to-r from-gray-900 to-gray-700'
+                    }`}>
                       {metric.value}
                     </div>
                     
-                    <div className="text-sm font-medium text-gray-300 mb-1">{metric.label}</div>
-                    <div className="text-xs text-gray-500">{metric.description}</div>
+                    <div className={`text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>{metric.label}</div>
+                    <div className={`text-xs transition-colors duration-300 ${
+                      isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                    }`}>{metric.description}</div>
                     
                     <div className={`w-full h-1 bg-gradient-to-r ${metric.color} rounded-full mt-3 opacity-60`}></div>
                   </div>
