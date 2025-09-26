@@ -86,25 +86,18 @@ function App() {
       // Track conversion
       trackConversion('lead_captured', leadFormData);
       
-      // Here you would typically send to your backend/CRM
-      // For demo purposes, we'll simulate the API call
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...leadFormData,
-          timestamp: new Date().toISOString(),
-          source: 'landing_page',
-          demoRequested: true
-        }),
-      }).catch(() => {
-        // Fallback for demo - in production, integrate with your CRM
-        console.log('Lead captured:', leadFormData);
-        return { ok: true };
+      // For demo purposes, we'll simulate successful form submission
+      // In production, integrate with your actual CRM/backend
+      console.log('Lead captured (Demo Mode):', {
+        ...leadFormData,
+        timestamp: new Date().toISOString(),
+        source: 'landing_page',
+        demoRequested: true
       });
-
+      
+      // Simulate API success
+      const response = { ok: true };
+      
       if (response.ok) {
         // Generate demo access link (replace with your actual app URL)
         const demoLink = `https://app.nextlevdecisions.com/demo?token=${btoa(leadFormData.email + Date.now())}&email=${encodeURIComponent(leadFormData.email)}&name=${encodeURIComponent(leadFormData.firstName + ' ' + leadFormData.lastName)}`;
@@ -243,6 +236,26 @@ function App() {
       });
     }
     setIsMenuOpen(false); // Close mobile menu if open
+  };
+
+  // Exit-intent dynamic message based on current section
+  const getExitIntentMessage = () => {
+    try {
+      const hash = (window?.location?.hash || '').toLowerCase();
+      if (hash.includes('sdg') || hash.includes('esg')) {
+        return 'Check your ESG alignment in minutes in the ESG COMPLIANCE CHECKLIST';
+      }
+      if (hash.includes('roi')) {
+        return 'Try our quick ROI Calculator — get a savings and ROI snapshot in under 2 minutes.';
+      }
+      // Also check pathname for deep links
+      const path = (window?.location?.pathname || '').toLowerCase();
+      if (path.includes('esg') || path.includes('sdg')) {
+        return 'Check your ESG alignment in minutes in the ESG COMPLIANCE CHECKLIST';
+      }
+    } catch {}
+    // Default to ROI teaser
+    return 'Try our quick ROI Calculator — get a savings and ROI snapshot in under 2 minutes.';
   };
 
   // Dashboard card functions
@@ -912,14 +925,6 @@ function App() {
                  </div>
 
                 {/* Floating Action Badges */}
-                <div className="absolute top-12 left-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full text-xs font-medium animate-bounce shadow-lg">
-                  <span className="flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +23% ROI
-                  </span>
-                </div>
-                
-                
                 <div className="absolute top-32 right-12 bg-gradient-to-r from-orange-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-medium animate-bounce shadow-lg" style={{animationDelay: '1s'}}>
                   <span className="flex items-center">
                     <Target className="w-3 h-3 mr-1" />
@@ -1769,7 +1774,7 @@ function App() {
                 <Gift className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Before You Go...</h3>
-              <p className="text-gray-300">Get our comprehensive AI Decision Framework Guide (valued at $297) - completely free!</p>
+              <p className="text-gray-300">{getExitIntentMessage()}</p>
             </div>
 
             <form onSubmit={handleLeadFormSubmit} className="space-y-4">
